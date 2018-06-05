@@ -1,34 +1,38 @@
-function Popup(sketch, font)
+function Popup(sketch, font, displayText, showValue1, showValue2, showValue3, defaultVal1, defaultVal2, defaultVal3)
 {
-  this.questionText = 'If 1 gate takes 5 seconds to \ncheck a single car, how many gates \nneed to be open in order to \nhave 10 cars pass through \nthe gate in 1 minuite '
+
+  this.questionText = displayText;
 
   this.value1Units = "gates";
   this.value2Units = "test";
   this.value3Units = "gates";
 
-  this.value1Max = 10;
-  this.value1Min = 0;
+  this.value1Max;
+  this.value1Min;
 
-  this.value2Max = 10;
-  this.value2Min = 0;
+  this.value2Max;
+  this.value2Min;
 
-  this.value3Max = 4;
-  this.value3Min = 0;
+  this.value3Max;
+  this.value3Min;
 
   this.xLoc = 200;
-  this.yLoc = 400;
+  this.yLoc = 300;
 
-  this.useValue1 = false;
-  this.useValue2 = false;
-  this.useValue3 = true;
+  this.buttonLocX = this.xLoc+100;
+  this.buttonLocY = this.yLoc+115;
 
-  this.height = 250;
+  this.useValue1 = showValue1;
+  this.useValue2 = showValue2;
+  this.useValue3 = showValue3;
+
+  this.height = 300;
   this.width = 300;
   this.popupVisible = true;
 
-  this.value1 = 5;
-  this.value2 = 5;
-  this.value3 = 1;
+  this.value1 = defaultVal1;
+  this.value2 = defaultVal2;
+  this.value3 = defaultVal3;
 
   this.val1X = this.xLoc - 95;
   this.val2X = this.xLoc - 40;
@@ -38,9 +42,15 @@ function Popup(sketch, font)
   this.popupSprite = sketch.createSprite( this.xLoc, this.yLoc, this.width, this.height);
   this.popupSprite.shapeColor="DarkGray";
 
-  this.okBtnSprite = sketch.createSprite( this.xLoc+100, this.yLoc+75);
-  this.okBtnSprite.addImage(sketch.loadImage("../images/game/play.png"));
+  this.okBtnSprite = sketch.createSprite( this.buttonLocX, this.buttonLocY);
+  this.okBtnSprite.addImage(sketch.loadImage("../images/game/okBtn.png"));
   this.okBtnSprite.depth = 200;
+  this.okBtnSprite.visible = false;
+
+  this.plyBtnSprite = sketch.createSprite( this.buttonLocX, this.buttonLocY);
+  this.plyBtnSprite.addImage(sketch.loadImage("../images/game/play.png"));
+  this.plyBtnSprite.depth = 200;
+  this.plyBtnSprite.visible = false;
 
   this.value1UpSprite = sketch.createSprite( this.val1X, this.yLoc-20, 20, 20);
   this.value1UpSprite.addImage(sketch.loadImage("../images/game/roadChevronUp.png"));
@@ -60,10 +70,16 @@ function Popup(sketch, font)
   this.value3DownSprite = sketch.createSprite( this.val3X, this.yLoc+50, 20, 20);
   this.value3DownSprite.addImage(sketch.loadImage("../images/game/roadChevronDown.png"));
 
-
-
   //this.popupGroup.addToGroup(this.popupSprite);
-  //this.popupGroup.addToGroup(this.okBtnSprite);
+  //this.popupGroup.addToGroup(this.plyBtnSprite);
+
+  this.setParams = function(displayText, showValue1, showValue2, showValue3)
+  {
+    this.questionText = displayText;
+    this.useValue1 = showValue1;
+    this.useValue2 = showValue2;
+    this.useValue3 = showValue3;
+  }
 
   this.showPopup = function()
   {
@@ -75,8 +91,11 @@ function Popup(sketch, font)
 
   this.clickUpValue1 = function()
   {
-    if(this.value1 < this.value1Max)
-      this.value1++;
+    //if(typeof this.valueMax != 'undefined')
+    //{
+      if(this.value1 < this.value1Max)
+        this.value1++;
+  //  }
   }
 
   this.clickDownValue1 = function()
@@ -113,7 +132,6 @@ function Popup(sketch, font)
   {
     this.popupVisible = true;
     this.popupSprite.visible = true;
-    this.okBtnSprite.visible = true;
 
     this.value1UpSprite.visible = this.useValue1;
     this.value2UpSprite.visible = this.useValue2;
@@ -127,7 +145,7 @@ function Popup(sketch, font)
     sketch.textFont(font);
     sketch.textSize(12);
 
-    sketch.text(this.questionText, this.xLoc - 130, this.yLoc - 100);
+    sketch.text(this.questionText, this.xLoc - 130, this.yLoc - 130);
 
 
     if(this.useValue1)
@@ -160,6 +178,7 @@ function Popup(sketch, font)
   {
     this.popupVisible = false;
     this.popupSprite.visible = false;
+    this.plyBtnSprite.visible = false;
     this.okBtnSprite.visible = false;
 
     this.value1UpSprite.visible = false;
