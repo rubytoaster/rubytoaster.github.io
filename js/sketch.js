@@ -55,8 +55,18 @@ var carSim = function(sketch) {
   let carInter;
 
   let proFontWindows;
+  let rotateMessage = "Please Rotate Screen \nto Portrait Mode"
+  let prevQuestionText = "";
+  let prevShowValue1 = false;
+  let prevShowValue2 = false;
+  let prevShowValue3 = false;
+  let prevOkBtn = false;
+  let prevPlayBtn = false;
+
+  let canvasElt;
 
   sketch.setup = function() {
+    sketch.frameRate(30);
     proFontWindows = sketch.loadFont("../font/ProFontWindows.ttf")
     carsThroughCt = 0;
 
@@ -68,7 +78,7 @@ var carSim = function(sketch) {
     lane3X = 320;
 
     questionText1 = 'Use the calculator below to \ncalculate WIP, given a \nthroughput of 4 \nand a flowtime of 7';
-    questionText2 = 'If 1 gate takes 5 seconds to \ncheck a single car, how many gates \nneed to be open in order to \nhave 10 cars pass through \nthe gate in 1 minuite '
+    questionText2 = 'If a single gate allows 7 cars \nthrough in 30 seconds how many \ngates are needed to let atleast \n17 cars through in 30 seconds?';
 
 
     popup = new Popup(sketch, proFontWindows, questionText1, false, false, true, 0, 0, 2);
@@ -161,12 +171,36 @@ var carSim = function(sketch) {
     {
       clearInterval(inter);
       clearInterval(carInter);
-      counter = 60;
+      counter = 30;
 
-      if(carsThroughCt < 2)
-        popup.setParams("Failed! Not Enough Cars", false, false, true);
+      if(carsThroughCt < 17)
+      {
+        popup.setParams("On No! It Looks Like Only " + carsThroughCt +" made it.  \n\nTry again!", false, false, true);
+        popup.plyBtnSprite.visible = true;
+//        removeAllCars();
+
+        /*carList = [];
+        for(let i = 0; i < gateList.length; i ++)
+        {
+          for(let j = 0; j < gateList[i].carQueue.length; i++)
+          {
+            gateList[i].carQueue[j].carsInLane = 0;
+            gateList[i].carQueue[j].carSprite.velocity.y = 10;
+            gateList[i].carQueue[j].carSprite.visible=false;
+            gateList[i].carQueue[j].carSprite.remove();
+            gateList[i].carQueue[j] = null;
+            gateList[i].carQueue.splice(j, 1);
+          }
+
+        }*/
+      }
       else
-        popup.setParams("Congrats! YouWin! \n\n" + carsThroughCt + " Cars Through", false, false, false);
+      {
+        popup.plyBtnSprite.visible = false;
+        popup.setParams("Congrats! You Win! \n\n" + carsThroughCt + " cars made it through the gate", false, false, false);
+        popup.okBtnSprite.visible = true;
+        question2Complete = true;
+      }
 
       popup.popupVisible = true;
     }
@@ -202,23 +236,51 @@ var carSim = function(sketch) {
     }
   }
 
-  window.onresize = function()
-  {
+  //window.onresize = function()
+  $(window).resize(function() {
       if(sketch.displayWidth > 1024){
         can = sketch.resizeCanvas(400, 500);
       }
       else
       {
-        can = sketch.resizeCanvas(400, 500);
-        const canvasElt = can.elt;
-        canvasElt.style.width = '100%', canvasElt.style.height="100%";
+        if(window.outerWidth > window.outerHeight)
+        {
+          //  popup.yLoc = 100;
+          prevQuestionText = popup.questionText;
+          prevShowValue1 = popup.useValue1;
+          prevShowValue2 = popup.useValue2;
+          prevShowValue3 = popup.useValue3;
+
+          popup.setParams(rotateMessage, false, false, false);
+          prevOkBtn = popup.okBtnSprite.visible;
+          prevPlayBtn = popup.plyBtnSprite.visible;
+          popup.okBtnSprite.visible = false;
+          popup.plyBtnSprite.visible = false;
+
+        }
+
+        else {
+            can = sketch.resizeCanvas(400, 500);
+            popup.setParams(prevQuestionText, prevShowValue1, prevShowValue2, prevShowValue3);
+            popup.okBtnSprite.visible = prevOkBtn;
+            popup.plyBtnSprite.visible = prevPlayBtn;
+        }
+
+        if(typeof can != "undefined")
+        {
+          canvasElt = can.elt;
+        }
+
+        if(typeof canvasElt != "undefined")
+        {
+          canvasElt.style.width = '100%', canvasElt.style.height="100%";
+        }
       }
-  }
+  });
 
   sketch.draw = function() {
 
     sketch.background(roadBackground);
-
 
     let howManyWaitingThisCycle = 0;
     for(var i = 0; i < carList.length; i++)
@@ -267,7 +329,7 @@ var carSim = function(sketch) {
         }
         popup.clickClose();
         inter = setInterval(timeIt, 1000);
-        carInter = setInterval(addCar, 1250);
+        carInter = setInterval(addCar, 1000);
         carsThroughCt = 0;
       }
     }
@@ -291,6 +353,10 @@ var carSim = function(sketch) {
         {
           popup.clickClose();
           setTimeout(()=>{setupQuestion2(popup)}, 250);
+        }
+        else if(question2Complete)
+        {
+
         }
       }
   }
@@ -356,4 +422,11 @@ function setupQuestion2(popup)
   popup.plyBtnSprite.visible = true;
   popup.value3Units = "Gates";
   popup.clickOpen();
+}
+
+function removeAllCars()
+{
+
+
+
 }
