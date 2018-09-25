@@ -1,5 +1,5 @@
 var slideIndex = 1;
-var total = 146;
+var total = 6;
 
 var searchDomain = [
   {key: "AA", value : "Aircraft Availability", area : "acro"},
