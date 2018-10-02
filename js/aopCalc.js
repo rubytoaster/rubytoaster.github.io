@@ -53,11 +53,11 @@ properties = ["name", "cType", "wip", "throughput", "flowtime", "takt", "thrTime
  const units_type = "units";
  const empty_str = "";
 
- wip_w_thruput = {"lbl0":wip_txt,"lbl1":thruput_txt,"lbl2":flowtime_txt,"opr":opr1,"val1tip":thruput_tip,"val2tip":flowtime_tip,"res_typ":units_type};
- wip_w_takt = {"lbl0":wip_txt,"lbl1":takt_txt,"lbl2":flowtime_txt,"opr":opr2,"val1tip":takt_tip,"val2tip":flowtime_tip,"res_typ":units_type};
+ wip_w_thruput = {"lbl0":wip_txt,"lbl1":flowtime_txt,"lbl2":thruput_txt,"opr":opr1,"val1tip":flowtime_tip,"val2tip":thruput_tip,"res_typ":units_type};
+ wip_w_takt = {"lbl0":wip_txt,"lbl1":flowtime_txt,"lbl2":takt_txt,"opr":opr1,"val1tip":flowtime_tip,"val2tip":takt_tip,"res_typ":units_type};
  flowtime_w_thruput = {"lbl0":flowtime_txt,"lbl1":wip_txt,"lbl2":thruput_txt,"opr":opr2,"val1tip":wip_tip,"val2tip":thruput_tip,"res_typ":empty_str};
  flowtime_w_takt = {"lbl0":flowtime_txt,"lbl1":wip_txt,"lbl2":takt_txt,"opr":opr1,"val1tip":wip_tip,"val2tip":takt_tip,"res_typ":empty_str};
- thruput = {"lbl0":thruput_txt,"lbl1":wip_txt,"lbl2":flowtime_txt,"opr":opr2,"val1tip":wip_tip,"val2tip":flowtime_tip,"res_typ":empty_str};
+ thruput = {"lbl0":thruput_txt,"lbl1":wip_txt,"lbl2":flowtime_txt,"opr":opr2,"val1tip":wip_tip,"val2tip":flowtime_tip,"res_typ":units_type};
  takt = {"lbl0":takt_txt,"lbl1":flowtime_txt,"lbl2":wip_txt,"opr":opr2,"val1tip":flowtime_tip,"val2tip":wip_tip,"res_typ":empty_str};
 
 
@@ -65,17 +65,20 @@ properties = ["name", "cType", "wip", "throughput", "flowtime", "takt", "thrTime
  const calc2 = function (v1,v2) {if(v2==0) {return 0} else {return v1 / v2}};
 
  const wipCalc = function (value, time) {
-  let valueUnits = time_type1_val;
-  let timeUnit = time_type2_val;
-  let timeSeconds = unitSecondsMap[timeUnit] * time;
+  let valueUnits = time_type2_val;
+  let timeUnit = time_type1_val;
+  let timeSeconds = calc1(unitSecondsMap[timeUnit],time);//unitSecondsMap[timeUnit] * time;
   let rateInSeconds;
-  if (calcObj.lbl1 === takt_txt) {
+  //alert(calcObj.lbl2);
+  /*if (calcObj.lbl2 === takt_txt) {
     rateInSeconds = calc2(unitSecondsMap[valueUnits],value);
+    alert(takt_txt + ' rateinsecs ' + rateInSeconds);
   } else {
     // Throughput
     rateInSeconds = calc2(value,unitSecondsMap[valueUnits]);
-  }
-  let wip = rateInSeconds * timeSeconds;
+  } */
+  rateInSeconds = calc2(value,unitSecondsMap[valueUnits]);
+  let wip = calc1(rateInSeconds,timeSeconds);//rateInSeconds * timeSeconds;
   return round(wip);
 }
 
@@ -95,13 +98,39 @@ properties = ["name", "cType", "wip", "throughput", "flowtime", "takt", "thrTime
  var isRounded = false;
  var enableCalc = false;
 
+ let precision = 1000;
+
+ function setPrecision() {
+   getUserInfo( (info) => {
+     if (info != null) {
+       switch (info.decimalPrecision) {
+         case "precision0":
+         precision = 1;
+         break;
+         case "precision1":
+         precision = 10;
+         break;
+         case "precision2":
+         precision = 100;
+         break;
+         case "precision3":
+         default:
+         precision = 1000;
+         break;
+       }
+     } else {
+       precision = 1000;
+     }
+     console.log("Rounding Precision set to: " + precision);
+   });
+ }
 
  function roundScientific(value) {
   let numArray = value.toString().split("e");
 
   let numberToRound = Number(numArray[0]);
 
-  let numberToReturn = Math.round(numberToRound * 1000) / 1000;
+  let numberToReturn = Math.round(numberToRound * precision) / precision;
 
   return numberToReturn + "e" + numArray[1];
 }
@@ -114,7 +143,7 @@ properties = ["name", "cType", "wip", "throughput", "flowtime", "takt", "thrTime
   if (value.toString().includes("e")) {
     // raw scientific  value rounding
     isRounded = true;
-  return roundScientific(value);
+    return roundScientific(value);
   } else if (value.toString().length > 10) {
     if (value.toString().split(".")[0].length > 7) {
       //pre decimal rounding
@@ -123,7 +152,7 @@ properties = ["name", "cType", "wip", "throughput", "flowtime", "takt", "thrTime
     } else {
       //post decimal rounding
       isRounded = true;
-    return Math.round(value * 1000) / 1000;
+    return Math.round(value * precision) / precision;
     }
   } else {
     // Small (non scientific) values under total length 10
@@ -160,7 +189,7 @@ function onTabToggle(tab) {
 
  function setFocus() {
   $("#inpt_val1").focus();
-   $("#inpt_val1").select();
+  // $("#inpt_val1").select();
  }
 
  /* function setFocusTab2() {
@@ -168,37 +197,65 @@ function onTabToggle(tab) {
    $("#inpt_ttk").select();
  } */
 
- function setTimeTypeFromWiz(val,isT){
-   if(!$("#timetype1").hasClass("hidden_toggle")) {
-   $("#inpt_val1").val(val);
-   if(isT) {
-     calcObj = wip_w_thruput;
-     setTimeOptions("seltime1","Units Per ","");
-   } else {
-     calcObj = wip_w_takt;
-     setTimeOptions("seltime1","","s");
-   }
-  // $('#seltime1 option')[$("#sel_tt_time option:selected").index()].selected = true;
-  time_type1_val = $("#sel_tt_time").val();
-  $('#seltime1').val(time_type1_val);
-   } else {
+ function setTimeTypeFromWiz(val,isT,isToggle){
+   if(!$("#timetype2").hasClass("hidden_toggle")) {
      $("#inpt_val2").val(val);
-   if(isT) {
-     calcObj = flowtime_w_thruput;
-     setTimeOptions("seltime2","Units Per ","");
-   } else {
-     calcObj = flowtime_w_takt;
-     setTimeOptions("seltime2","","s");
-   }
+     if(isT) {
+       //calcObj = calcObj.lbl0 == wip_txt ? wip_w_thruput : flowtime_w_thruput;
+       if(calcObj.lbl0 == wip_txt) {
+          calcObj = wip_w_thruput;
+       } else {
+          calcObj = flowtime_w_thruput;
+          calcObj.res_typ = $("#seltime2").val();
+       }
+       setTimeOptions("seltime2","Units Per ","");
+     } else {
+       //calcObj = calcObj.lbl0 == wip_txt ? wip_w_takt : flowtime_w_takt;
+       if(calcObj.lbl0 == wip_txt) {
+          calcObj = wip_w_takt;
+       } else {
+          calcObj = flowtime_w_takt;
+          calcObj.res_typ = $("#seltime2").val();
+       }
+       setTimeOptions("seltime2","","s");
+     }
+  // $('#seltime1 option')[$("#sel_tt_time option:selected").index()].selected = true;
+    if(isToggle) {
+      time_type2_val = $("#seltime2").val();
+    }
+    else {
+      time_type2_val = $("#sel_tt_time").val();
+     $('#seltime2').val(time_type2_val);
+    }
+   } /* else {
+     $("#inpt_val1").val(val);
+     if(isT) {
+       calcObj = flowtime_w_thruput;
+       setTimeOptions("seltime1","Units Per ","");
+     } else {
+       calcObj = flowtime_w_takt;
+       setTimeOptions("seltime1","","s");
+     }
    //$('#seltime2 option')[$("#sel_tt_time option:selected").index()].selected = true;
-   time_type2_val = $("#sel_tt_time").val();
-   $('#seltime2').val(time_type2_val);
-   }
+     time_type2_val = $("#sel_tt_time").val();
+     $('#seltime1').val(time_type1_val);
+   } */
  }
 
- function thruputClicked() {
-   if(thruput_val != 0) {
-      setTimeTypeFromWiz(thruput_val,true);
+ function toggleReciprocal() {
+    recipVal = round(calc2(1,$("#inpt_val2").val()));
+    if(calcObj.lbl2 == thruput_txt) {
+      takt_time_val = recipVal;
+      taktClicked(true);
+    } else {
+      thruput_val = recipVal;
+      thruputClicked(true);
+    }
+  }
+
+ function thruputClicked(isToggle) {
+   if(thruput_val != 0 || isToggle) {
+      setTimeTypeFromWiz(thruput_val,true,isToggle);
     setTTCalcHTML();
     //alert('about to use thruput and switch');
     $("#calc_sect").removeClass("hidden_toggle");
@@ -208,9 +265,10 @@ function onTabToggle(tab) {
    }
  }
 
- function taktClicked() {
-   if(takt_time_val != 0) {
-   setTimeTypeFromWiz(takt_time_val,false);
+ function taktClicked(isToggle) {
+   //alert('takt clicked');
+   if(takt_time_val != 0 || isToggle) {
+   setTimeTypeFromWiz(takt_time_val,false,isToggle);
    setTTCalcHTML();
    // alert('about to use takt and switch');
    $("#tab_tt").removeClass("active");
@@ -333,7 +391,14 @@ function setTTCalcHTML() {
   $("#lbl_val2").text(calcObj.lbl2);
   $("#eq_val1").text(calcObj.lbl1);
   $("#eq_result").text(calcObj.lbl0);
-  $("#eq_val2").text(calcObj.lbl2);
+  if(calcObj.lbl2 == takt_txt) {
+    $("#eq_recipr").removeClass("hidden_toggle");
+    $("#eq_val2").text(thruput_txt);
+  }
+  else {
+   $("#eq_recipr").addClass("hidden_toggle");
+   $("#eq_val2").text(calcObj.lbl2);
+  }
   $("#eq_opr").text(calcObj.opr);
   $("#opr_val").text(calcObj.opr);
 
@@ -387,12 +452,17 @@ function calcResult() {
     }
     $("#result").text(calcResultVal);
     $("#result2").text(calcResultVal);
-    $("#result2units").text(calcObj.res_typ);
+    if(calcObj.lbl0 == thruput_txt) {
+      $("#result2units").text(calcObj.res_typ + " per " + $("#seltime2").val());
+    } else {
+      $("#result2units").text(calcObj.res_typ);
+    }
+    
   }
   isRounded = false;
 }
 
-function buildCalcObj(name, calcObj){
+function buildCalcObj(name, group, calcObj){
   let calcDBObject = {
     "name" : name,
     "cType" : "",
@@ -403,7 +473,7 @@ function buildCalcObj(name, calcObj){
     "thrTimeType" : "",
     "flowTimeType" : "",
     "taktTimeType" : "",
-    "group" : "group_placeholder"
+    "group" : group
   };
   switch (calcObj) {
     case wip_w_thruput:
@@ -454,13 +524,32 @@ function buildCalcObj(name, calcObj){
   return calcDBObject;
 }
 
-function openDatabase(){
+function openCalculationsDB(){
   itemDB.open(databaseName, version, databaseStore, "", properties, true, function() {});
 }
 
 function saveResults(){
-  myCalcDBObject = buildCalcObj("Test2", calcObj);
-  itemDB.createItem(databaseStore, myCalcDBObject, function() {});
+  if(enableCalc && $("#fld_save_name").val()){
+    var myName = $("#fld_save_name").val();
+    var myGroup = $("#fld_save_group").val();
+    myCalcDBObject = buildCalcObj(myName, myGroup, calcObj);
+    itemDB.createItem(databaseStore, myCalcDBObject, function() {
+      //console.log(myName + " calculation saved...");
+    });
+    //document.getElementById('btn_display_results').style.display="block";
+  }
+  $("#saveCalcButton").addClass("hidden_toggle");
+  $("#save_sect").addClass("hidden_toggle");
+  $("#openSaveButton").removeClass("hidden_toggle");
+  
+}
+
+function openSave() {
+  if(enableCalc) {
+    $("#openSaveButton").addClass("hidden_toggle");
+    $("#save_sect").removeClass("hidden_toggle");
+    $("#saveCalcButton").removeClass("hidden_toggle");
+  }
 }
 
 function setCalcType(cType) {
@@ -485,7 +574,7 @@ function setCalcType(cType) {
    case 0:
    calcObj = wip_w_thruput;
  }
- openDatabase();
+ openCalculationsDB();
  setCalcHTML();
 }
 

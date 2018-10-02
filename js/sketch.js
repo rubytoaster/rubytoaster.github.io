@@ -1,4 +1,11 @@
 var carSim = function(sketch) {
+  
+  loadQuizModal();
+
+  setupQuestions('Flow Time', 3, (questions) => {
+    createQuiz(questions);
+  });
+  
   var bgcolor;
   var throughputSlider;
   var arrivalRateSlider;
@@ -33,7 +40,7 @@ var carSim = function(sketch) {
   let question2Complete = false;
 
   let imageNameList = [];
-  imageNameList.push('images/game/batmobile.png');
+  //imageNameList.push('images/game/batmobile.png');
   imageNameList.push('images/game/cop car.png');
   imageNameList.push('images/game/truck2.png');
   imageNameList.push('images/game/yellow car.png');
@@ -67,6 +74,8 @@ var carSim = function(sketch) {
   let canvasElt;
 
   sketch.setup = function() {
+    
+
     sketch.frameRate(30);
     proFontWindows = sketch.loadFont("font/ProFontWindows.ttf")
     carsThroughCt = 0;
@@ -437,13 +446,4 @@ function setupQuestion2(popup)
   popup.plyBtnSprite.visible = true;
   popup.value3Units = "Gates";
   popup.clickOpen();
-}
-
-
-
-function removeAllCars()
-{
-
-
-
 }

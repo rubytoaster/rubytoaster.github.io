@@ -14,7 +14,7 @@ var itemDB = ( function() {
  */
   iDB.open = function(databaseName, version, datastoreName, key_path, indices, useAutoIncrement,callback) {
     // Open a connection to the datastore.
-    console.log("version: " + version);
+    //console.log("version: " + version);
     var request = indexedDB.open(databaseName, version);
 
     // Handle datastore upgrades.
@@ -62,7 +62,7 @@ var itemDB = ( function() {
       databases[databaseName] = request.result;
 
       // Execute the callback.
-      callback("open");
+      callback();
     };
 
     // Handle errors when opening the datastore.
@@ -79,6 +79,54 @@ var itemDB = ( function() {
     indexedDB.deleteDatabase(databaseName);
 
     callback();
+  };
+
+  /**
+  * Opens a simple instance of the database with just the name and version
+  */
+   iDB.simpleOpen = function(databaseName, version, datastoreName, callback){
+     // Open a connection to the datastore.
+     console.log("version: " + version);
+     var request = indexedDB.open(databaseName, version);
+
+     // Handle successful datastore access.
+     request.onsuccess = function(e) {
+       // Get a reference to the DB.
+       let db = e.target.result;
+
+       datastores[datastoreName] = db;
+       console.log(e.target.result);
+
+       databases[databaseName] = request.result;
+
+       callback();
+     };
+
+     // Handle errors when opening the datastore.
+     request.onerror = iDB.onerror;
+   };
+
+   /**
+   * Checks if a datastore exists in the database
+   */
+   iDB.databaseExists = function(databaseName, version, datastoreName, callback){
+     var dbStoreExists = true;
+     var request = indexedDB.open(databaseName, version);
+
+     request.onupgradeneeded = function(e) {
+       var db = e.target.result;
+
+       // Delete the old datastore.
+       if (!db.objectStoreNames.contains(datastoreName)) {
+         dbStoreExists = false;
+         db.close();
+         indexedDB.deleteDatabase(databaseName);
+       }
+       else{
+         e.target.transaction.abort();
+       }
+     };
+    callback(dbStoreExists);
   };
 
   /**
@@ -101,32 +149,57 @@ var itemDB = ( function() {
       callback(request.result);
     };
     transaction.onsuccess = function(e) {
-      console.log('Request successful...');
+      //console.log('Request successful...');
     };
     request.onerror = iDB.onerror;
   };
 
- /**
+  /**
+  * Finds the first record that matches the query
+  * Parameters:
+  * datastoreName - string name of the datastore in the database.
+  * property - the property of the object which we wish to search for.
+  * value - the value of the object we wish to match.
+  * callback - function to call once the database has been opened.
+  */
+ iDB.fetchOneByIndex = function(datastoreName, property, value, callback) {
+   let db = datastores[datastoreName];
+   let transaction = db.transaction([datastoreName], 'readwrite');
+   let objStore = transaction.objectStore(datastoreName);
+
+   let request = objStore.index(property).get(value);
+
+   transaction.oncomplete = function(e) {
+     callback(request.result);
+   };
+
+   transaction.onsuccess = function(e) {
+     //console.log('Request successful...');
+   };
+
+   request.onerror = iDB.onerror;
+ };
+
+  /**
  * Finds the first record that matches the query
  * Parameters:
  * datastoreName - string name of the datastore in the database.
- * property - the property of the object which we wish to search for.
- * value - the value of the object we wish to match.
+ * key - the key of the object we wish to match to keyPath.
  * callback - function to call once the database has been opened.
  */
-iDB.fetchOne = function(datastoreName, property, value, callback) {
+iDB.fetchOneByKey = function(datastoreName, key, callback) {
   let db = datastores[datastoreName];
   let transaction = db.transaction([datastoreName], 'readwrite');
   let objStore = transaction.objectStore(datastoreName);
 
-  let request = objStore.index(property).get(value);
+  let request = objStore.get(key);
 
   transaction.oncomplete = function(e) {
     callback(request.result);
   };
 
   transaction.onsuccess = function(e) {
-    console.log('Request successful...');
+    //console.log('Request successful...');
   };
 
   request.onerror = iDB.onerror;
@@ -143,7 +216,7 @@ iDB.fetchAll = (datastoreName, callback) => {
   let transaction = db.transaction([datastoreName], 'readwrite');
   let objStore = transaction.objectStore(datastoreName);
 
-  //var keyRange = IDBKeyRange.lowerBound(0);
+  var keyRange = IDBKeyRange.lowerBound(0);
   var cursorRequest = objStore.openCursor();
 
   let items = [];
@@ -155,7 +228,7 @@ iDB.fetchAll = (datastoreName, callback) => {
     }
 
     items.push(cursor.value);
-    console.log("added to 'items' " + JSON.stringify(cursor.value));
+    //console.log("added to 'items' " + JSON.stringify(cursor.value));
     cursor.continue();
   };
 
@@ -179,7 +252,7 @@ iDB.fetchAll = (datastoreName, callback) => {
 * callback - function to call once the database has been opened.
 */
 iDB.createItem = function(datastoreName, item, callback) {
-  console.log("In createItem of " + datastoreName + "...");
+  //console.log("In createItem of " + datastoreName + "...");
   // Get a reference to the db.
   var db = datastores[datastoreName];
 
@@ -198,7 +271,7 @@ iDB.createItem = function(datastoreName, item, callback) {
   // Handle a successful datastore put.
   request.onsuccess = function(e) {
     // Execute the callback function.
-    console.log("creation successful...");
+    //console.log("creation successful...");
     callback("Create Item");
   };
 
@@ -229,6 +302,43 @@ iDB.deleteItem = function(datastoreName, key, callback) {
   }
 };
 
+iDB.deleteWithoutKey = function (databaseName, datastoreName, property, value, callback) {
+  var db = datastores[datastoreName];
+  var transaction = db.transaction([datastoreName], "readwrite");
+  var store       = transaction.objectStore(datastoreName);
+  var index       = store.index(property);
+  var request     = index.openCursor(IDBKeyRange.only(value));
+
+  request.onsuccess = function() {
+    var cursor = request.result;
+
+    if (cursor) {
+        cursor.delete();
+        cursor.continue();
+    }
+  };
+  callback();
+}
+
+iDB.updateItemById = (datastoreName, id, item, callback) => {
+  //console.log("updating item by ID");
+  let db = datastores[datastoreName];
+  let transaction = db.transaction([datastoreName], 'readwrite');
+  let objStore = transaction.objectStore(datastoreName);
+
+  item.id = id;
+
+  let request = objStore.put(item);
+
+  request.onsuccess = () => {
+    callback();
+  };
+
+  request.onerror = (e) => {
+    console.log(e);
+  };
+};
+
 /**
 * Update Item.
 * Parameters:
@@ -250,7 +360,7 @@ iDB.updateItem = (datastoreName, key_path, key, item, callback) => {
       if(cursor.value[key_path] === key){
         var request = cursor.update(item);
         request.onsuccess = () => {
-          console.log('Update Successful');
+          //console.log('Update Successful');
           callback("Update");
         };
         request.onerror = (e) => {
