@@ -1,10 +1,8 @@
 var carSim = function(sketch) {
   
-  loadQuizModal();
+  //loadQuizModal();
 
-  setupQuestions('Flow Time', 3, (questions) => {
-    createQuiz(questions);
-  });
+  //readQuestions('littlesLaw');
   
   var bgcolor;
   var throughputSlider;

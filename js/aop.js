@@ -1,5 +1,59 @@
 var slideIndex = 1;
 var total = 50;
+let currentQuiz;
+
+
+
+/* todd overlay */
+
+/*function openContOverlay(cLink) {
+  $("#iOverLayCont").load("content/" + cLink);
+  let iOl = document.getElementById("iOverlay");
+  iOl.width = window.innerWidth;
+  iOl.height = window.innerHeight;
+  iOl.style.height = "100%";
+}
+
+function closeIContOverlay() {
+  $("#iOverLayCont").html(" ");
+  document.getElementById("iOverlay").style.height = "0%";
+} */
+
+function openIOverlay(fLink) {
+  // alert('IOverlay clicked');
+  if(iOvl != undefined && iOvl != null) {
+    iFrame = document.createElement('iframe');
+  //let iOl = document.getElementById("iOverlay");
+    iOvl.width = window.innerWidth;
+    iOvl.height = window.innerHeight;
+    iFrame.width = window.innerWidth;
+    iFrame.height = window.innerHeight;
+    iFrame.id = "iOvlFrame";
+    iFrame.frameBorder = 0;
+    iFrame.sandbox = 'allow-modals allow-scripts allow-same-origin';
+    iFrame.setAttribute("src", fLink);
+    iFrame.onorientationchange = readDeviceOrientation;
+    iOvl.appendChild(iFrame);
+    iOvl.style.height = "100%";
+}
+}
+
+function closeIOverlay() {
+  //alert('IOverlayClose clicked');
+
+  //let iframe = document.getElementById('iOlFrame');
+  //let iOl = document.getElementById("iOverlay");
+  //iframe.setAttribute("src", "about:blank");
+  if((iOvl != undefined && iOvl != null) &&
+     (iFrame != undefined && iFrame != null))
+   {
+    iOvl.removeChild(iFrame);
+    iOvl.style.height = "0%";
+  }
+}
+
+/* end todd overlay */
+
 
 function initalLoad(){
 
@@ -9,6 +63,10 @@ function initalLoad(){
 
   $("#backButton").hide();
   $("#menuButton").hide();
+  $("#backActivityButton").hide();
+  $("#backChartsButton").hide();
+  $("#backQuizButton").hide();
+
 
   loadSidenav();
 }
@@ -59,14 +117,16 @@ function loadHome(){
   closeSidenav();
   //loadSidenav();
   $("#menuButton").show();
-//  $("#backButton").css('display', 'none');
-$("#app_cont").load("content/home.html");
-$("#pageTitle").text('AoP');
-$("#app_cont").css('background-color', '#e0e0e0');
-$("#app_cont").css('height','100%');
-$('body').css('background-color', '#e0e0e0');
+  //  $("#backButton").css('display', 'none');
+  $("#app_cont").load("content/home.html");
+  $("#pageTitle").text('AoP');
+  $("#app_cont").css('background-color', '#e0e0e0');
+  $("#app_cont").css('height','100%');
+  $('body').css('background-color', '#e0e0e0');
 }
 
+
+/*
 function clickNextSlide(){
   $('.slider').slider('next');
 }
@@ -114,6 +174,7 @@ function loadSlide(n){
     $('.slider').slider({interval:1000000000, indicator:true, });
   });
 }
+*/
 
 function loadCalculator(){
   clearColor();
@@ -155,8 +216,6 @@ function loadCalculatorModal(){
     $('#modal1').modal('open');
 
   }
-
-
 }
 
 function loadSearchModal(){
@@ -194,8 +253,6 @@ function loadSearchModal(){
       dismissible:false
     });
     $('#modal1').modal('open');
-
-
   }
 
   function loadNotesModal(){
@@ -216,21 +273,21 @@ function loadSearchModal(){
 
   }
 
-  function loadQuizModal() {
+  // function loadQuizModal() {
 
-    $("#quiz_content").load("content/quiz.html");
-    $("#app_cont").css('filter', 'blur(5px) grayscale(50%)');
-    $("#quiz_content").css('padding-top','0px');
+  //   $("#quiz_content").load("content/quiz.html");
+  //   $("#app_cont").css('filter', 'blur(5px) grayscale(50%)');
+  //   $("#quiz_content").css('padding-top','0px');
 
-    $(document).ready(function(){
-      $('#quizModal').modal();
-    });
+  //   $(document).ready(function(){
+  //     $('#quizModal').modal();
+  //   });
 
-    $('#quizModal').modal({
-      dismissible:false
-    });
-    $('#quizModal').modal('open');
-  }
+  //   $('#quizModal').modal({
+  //     dismissible:false
+  //   });
+  //   $('#quizModal').modal('open');
+  // }
 
   function loadResources(){
     clearColor();
@@ -242,8 +299,10 @@ function loadSearchModal(){
     $("#menuButton").show();
     $("#backButton").hide();
   //add a transform for the lines.
-
 }
+
+
+
 
 function loadGettingStarted(){
   clearColor();
@@ -293,11 +352,11 @@ function closeGame() {
   if(typeof car_S != 'undefined' && car_S !== null) {
     gameCleanup(car_S,'app_cont');
   }
-  
+
   if(typeof conv_Sim != 'undefined' && conv_Sim !== null) {
     gameCleanup(conv_Sim,'app_cont');
   }
-  
+
   if(typeof c_PathSim != 'undefined' && c_PathSim !== null) {
     gameCleanup(c_PathSim,'app_cont');
   }
@@ -361,6 +420,7 @@ function loadLandscapeModal(){
       dismissible: false
     });
     $('#landscapeModal').modal('open');
+
   }
 
 }
@@ -476,6 +536,21 @@ function animateChartArrow()
   bottomPatty.style="transform:rotate(45deg);width:15px; top:63%;";
 }
 
+
+function animateQuizArrow()
+{
+  $("#menuButton").hide();
+  $("#backQuizButton").show();
+
+  var topPatty = document.getElementById("patQuiz1");
+  var bottomPatty = document.getElementById("patQuiz3");
+  topPatty.style="height:4px; width:24px; position:absolute; top:45%; left:15%";
+
+  topPatty.style="transform:rotate(-45deg);width:15px; top:28%; left:14%;";
+  bottomPatty.style="transform:rotate(45deg);width:15px; top:63%;";
+}
+
+
 function clickBackToActivity()
 {
   var burger1 = document.getElementById("bur1");
@@ -499,7 +574,7 @@ function clickBackToResources()
   var burger3 = document.getElementById("bur3");
   burger1.style="transform:rotate(-45deg);width:15px; top:28%; left:14%;"
   burger3.style="transform:rotate(45deg);width:15px; top:63%;";
-  loadResources(); 
+  loadResources();
   resetArrow();
   burger1.style="tranform:rotate(45deg); width:24px; top:20%; left:15%;";
   burger3.style="tranform:rotate(-45deg); width:24px; top:70%; left:15%;";
@@ -514,6 +589,19 @@ function clickBackToCharts()
   burger3.style="transform:rotate(45deg);width:15px; top:63%;";
   loadCharts();
   resetChartArrow();
+  burger1.style="tranform:rotate(45deg); width:24px; top:20%; left:15%;";
+  burger3.style="tranform:rotate(-45deg); width:24px; top:70%; left:15%;";
+}
+
+function clickBackToQuiz()
+{
+  console.log("clickBackToQuiz");
+  var burger1 = document.getElementById("patQuiz1");
+  var burger3 = document.getElementById("patQuiz3");
+  burger1.style="transform:rotate(-45deg);width:15px; top:28%; left:14%;"
+  burger3.style="transform:rotate(45deg);width:15px; top:63%;";
+  saveAndCloseQuiz();
+  resetQuizArrow();
   burger1.style="tranform:rotate(45deg); width:24px; top:20%; left:15%;";
   burger3.style="tranform:rotate(-45deg); width:24px; top:70%; left:15%;";
 }
@@ -556,6 +644,55 @@ function resetChartArrow()
   topPatty.style="transform:rotate(45deg);width:24px; top:45%; left:15%;";
   bottomPatty.style="tranform:rotate(-45deg); width:24px; top:70%; left:15%";
 }
+
+function resetQuizArrow()
+{
+  var topPatty = document.getElementById("patQuiz1");
+  var bottomPatty = document.getElementById("patQuiz3");
+  topPatty.style="transform:rotate(45deg);width:24px; top:45%; left:15%;";
+  bottomPatty.style="tranform:rotate(-45deg); width:24px; top:70%; left:15%";
+}
+
+function clickBackToQuiz()
+{
+  var burger1 = document.getElementById("patQuiz1");
+  var burger3 = document.getElementById("patQuiz3");
+  burger1.style="transform:rotate(-45deg);width:15px; top:28%; left:14%;"
+  burger3.style="transform:rotate(45deg);width:15px; top:63%;";
+  loadQuizList();
+  resetQuizArrow();
+  burger1.style="tranform:rotate(45deg); width:24px; top:20%; left:15%;";
+  burger3.style="tranform:rotate(-45deg); width:24px; top:70%; left:15%;";
+}
+
+
+function loadQuizList(){
+  console.log("loadquizlist");
+  clearColor();
+  closeGame();
+
+  closeSidenav();
+  $("#app_cont").load("content/quizList.html");
+  $("#pageTitle").text("Quizzes");
+  $("#menuButton").show();
+  $("#backQuizButton").hide();
+
+  openQuestionsNScores();
+}
+
+function loadQuiz(name, datastoreName){
+  clearColor();
+  closeGame();
+  currentQuiz = datastoreName;
+
+  $("#app_cont").load("content/quizPage.html");
+  $("#pageTitle").text(name + " Quiz");
+   $("#menuButton").hide();
+  $("#backQuizButton").show();
+  animateQuizArrow();
+}
+
+
 function loadTraining(){
   clearColor();
   closeSidenav();

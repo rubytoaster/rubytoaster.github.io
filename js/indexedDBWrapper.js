@@ -61,6 +61,7 @@ var itemDB = ( function() {
 
       databases[databaseName] = request.result;
 
+      checkUsageAndEstimate();
       // Execute the callback.
       callback();
     };
@@ -99,6 +100,7 @@ var itemDB = ( function() {
 
        databases[databaseName] = request.result;
 
+       checkUsageAndEstimate();
        callback();
      };
 
@@ -339,6 +341,23 @@ iDB.updateItemById = (datastoreName, id, item, callback) => {
   };
 };
 
+iDB.updateItemByUniqueProperty = (datastoreName, property, value, item, callback) => {
+
+  let db = datastores[datastoreName];
+  let transaction = db.transaction([datastoreName], 'readwrite');
+  let objStore = transaction.objectStore(datastoreName);
+
+  let request = objStore.index(property).put(item);
+
+    transaction.oncomplete = function(e) {
+      callback(request.result);
+    };
+    transaction.onsuccess = function(e) {
+      //console.log('Request successful...');
+    };
+    request.onerror = iDB.onerror;
+};
+
 /**
 * Update Item.
 * Parameters:
@@ -375,6 +394,23 @@ iDB.updateItem = (datastoreName, key_path, key, item, callback) => {
   // Export the iDB object.
   return iDB;
 }());
+
+/*
+* Check Usage and Estimate - this function can determine how much free storage
+* is left in the device and if there may be enough for the application to run.
+*/
+function checkUsageAndEstimate() {
+  if ('storage' in navigator && 'estimate' in navigator.storage) {
+    navigator.storage.estimate().then(({usage, quota}) => {
+      //alert(`Using ${usage} out of ${quota} bytes.`);
+      if (usage >= quota) {
+        alert("Error! Not enough storage space to run application. Please free up some space and try again.");
+      } else if (usage > (quota * .95)) {
+        alert("Warning! May need to free up storage space for application!");
+      }
+    });
+  }
+}
 
 /**
 * Iteration Copy to ensure a deep copy of the JSON Object is created.

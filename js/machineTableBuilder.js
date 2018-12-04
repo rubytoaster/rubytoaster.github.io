@@ -438,23 +438,20 @@ function displayListOfTableCharts(charts){
 
   charts.forEach((chart) =>{
     $('<div>', {
-      class: "row collapseGroup"
-    }).append( $('<ul>', {
-      style: "background-color:#eeeeee;",
-      id: "chartList"
+      class: "row collapseGroup",
+      style: "background-color:#eeeeee;"
     }).append( $('<div>', {
       class: "tableChartItem col s11 collapsible-header",
       text: chart.name,
       id: chart.id
-    })).append( $('<li>', {
-    }).append( $('<div>', {
+    })).append( $('<div>', {
       class: "tableDeleteButton col s1 headerCollapsible",
       style: "padding:0",
     }).append( $('<img>', {
       src: "css/svg/trash.svg",
       id: chart.id,
       style: "vertical-align:middle; width: 20px; height: 20px;"
-    }))))).appendTo('#saved_table_charts');
+    }))).appendTo('#saved_table_charts');
   });
 }
 

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!--Import materialize.css-->
+  <link type="text/css" rel="stylesheet" href="css/aop.css"  media="screen,projection"/>
+  <link href="https://fonts.googleapis.com/css?family=Armata|Montserrat" rel="stylesheet">
+  <!--Let browser know website is optimized for mobile-->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <meta name="msapplication-TileColor" content="#da532c">
+  <meta name="theme-color" content="#ffffff">
+  <style>    
+    #canvas {
+      margin: 0;
+      position: absolute;
+      top: 50%;
+      -ms-transform: translateY(-50%);
+      transform: translateY(-50%);
+       }
+  </style>
+</head>
+  <body style="overflow: hidden; position: fixed;">
+    <script src="js/jquery.min.js"></script>
+    <script language="javascript" type="text/javascript" src="js/p5.js"></script>
+    <script language="javascript" type="text/javascript" src="js/p5.sound.min.js"></script>
+    <script language="javascript" type="text/javascript" src="js/planeBuilder/wings.js"></script>
+    <script language="javascript" type="text/javascript" src="js/planeBuilder/tail.js"></script>
+    <script language="javascript" type="text/javascript" src="js/planeBuilder/cockpit.js"></script>
+    <script language="javascript" type="text/javascript" src="js/planeBuilder/fuselage.js"></script>
+    <script language="javascript" type="text/javascript" src="js/planeBuilder/conveyerBeltPlane.js"></script>
+    <script language="javascript" type="text/javascript" src="js/planeBuilder/statsDisplay.js"></script>
+    <script language="javascript" type="text/javascript" src="js/planeBuilder/sketch.js"></script>
+    <script>
+    
+    
+    $("body").bind("touchstart", function(e) {
+        if(e.target.nodeName === "BODY"){
+           e.preventDefault();
+        }
+    });
+    
+    $(function(){
+      $("#app_cont").empty();
+      plane_S = new p5(planeBuilderSim,'app_cont');
+    });
+    </script>
+  </body>
+</html>

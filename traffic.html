@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!--Import materialize.css-->
+  <link type="text/css" rel="stylesheet" href="css/aop.css"  media="screen,projection"/>
+  <link href="https://fonts.googleapis.com/css?family=Armata|Montserrat" rel="stylesheet">
+  <!--Let browser know website is optimized for mobile-->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <meta name="msapplication-TileColor" content="#da532c">
+  <meta name="theme-color" content="#ffffff">
+  <style>
+    background-image: url("images/game/conveyerImgs/gameBackground.png");
+  </style>
+  <title id="pageTitle">Traffic Simulator</title>
+</head>
+  <body>
+    <script src="js/jquery.min.js"></script>
+    <script language="javascript" type="text/javascript" src="js/p5.js"></script>
+    <script language="javascript" type="text/javascript" src="js/traffic/sketch.js"></script>
+    <script language="javascript" type="text/javascript" src="js/traffic/car.js"></script>
+    <script>
+    $(function(){
+      $("#app_cont").empty();
+      traffic_S = new p5(trafficSim,'app_cont');
+    });
+
+    window.onload = function(e){
+        loadTrafficModal();
+      }
+    </script>
+    <div id="trafficSimulationInfoBar" style="background-color:blue; width:100%; height:60px;">
+
+    </div>
+    <div id="modal_cont">
+      <div id="modal1"  class="modal calcModal" style="box-shadow: none;background-color:transparent;">
+        <div id="traffic_modal_content" class="modal-content"
+          style="box-shadow: 0 8px 10px 1px rgba(0,0,0,0.14), 0 3px 14px 2px rgba(0,0,0,0.12), 0 5px 5px -3px rgba(0,0,0,0.3); background-color:#fff; border-radius:5px;" >
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
